@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  products:
+    build: ./products
+    container_name: products
+    ports:
+      - "3001:3001"
+
+  orders:
+    build: ./orders
+    container_name: orders
+    depends_on:
+      - products
+      - db
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=example
+      - DB_NAME=ecommerce
+    ports:
+      - "3002:3002"
+
+  payments:
+    build: ./payments
+    container_name: payments
+    depends_on:
+      - orders
+    ports:
+      - "3003:3003"
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: ecommerce
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  db_data:
